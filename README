@@ -1,0 +1,16 @@
+SIFT is an open source file and log parser. This is the 1st file of the project hosted on GitHub.
+
+It's design is intended to be used by support personel who are fimilar with the basics of python
+programming, but simple enough that a new parser should be easy enough to create in 30 minutes. The 
+design should also make multiple custom log parsers easy to manage.
+
+The framework is licensed under the Lesser GPL giving rights to propritery users of the framework.
+
+The SIFT framework is Copywrite of Peter Moore 2012. 
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 3 of the License, or any later version.
+
+A copy of the license is available here http://www.gnu.org/licenses/lgpl.html
