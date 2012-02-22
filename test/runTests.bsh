@@ -4,7 +4,7 @@ PYTHON=python
 
 for file in `ls test_*py` 
 do
-    echo "********************************************************************"
+    echo "**********************************************************************"
     echo "running test $PYTHON $file "
     $PYTHON ./$file
 done

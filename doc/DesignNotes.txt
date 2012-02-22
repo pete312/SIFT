@@ -4,10 +4,10 @@ Python does not have abstract base classes until Python 2.6. SIFT is built aroun
 
 SiftEngine   -- An abstract base class to find complex patterns in "text" and hold state about the "text".
 SiftState    -- A base class which is used to hold state (good, bad, ugly or Green, Amber, Red) about an entity.
-SiftRegEx    -- A regex wrapper class to make finding lines 
-SiftData     -- A base class designed to hold 
+SiftRegEx    -- A regex wrapper class to make finding lines of matching text as well as providing common patterns.
+SiftData     -- A base class designed to hold data gleened from SiftRegEx 
 SiftStream   -- A base class to handle data movement from files or network.
-SiftAlert    -- An abstract base class to define an interface to an alerting system such as Nagios or other monitoring system
+SiftAlert    -- An abstract base class to define an interface to an alerting system such as Nagios or other monitoring system.
 
 The design will be:
 SiftEngine inherits:

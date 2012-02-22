@@ -1,26 +1,27 @@
-#!/usr/bin/python
+#!python
 import unittest
+import siftengine
 
 
-class TestHelper(SiftEngine):
+class TestHelper(siftengine.SiftEngine):
     def __init__(self):
         pass
         
-    def IsConstructed(self):
-        return true
+    def is_constructed(self):
+        return True
         
-        
-
-
+     
+     
 class TestSiftEngine(unittest.TestCase):
     
-    def SetUp():
+    def setUp(self):
         self.sift_engine = TestHelper();
     
-    def test_Inherit_and_instantiate():
-        self.assertIsTrue(self.sift_engine.IsConstructed)
+    def test_inherit_and_instantiate(self):
+        self.assertTrue( self.sift_engine )
+        self.assertEqual( 0.1, self.sift_engine.version() )
         
-    def test_Sift_engine_finds_test_string():
+    def test_sift_engine_finds_test_string(self):
         pass
     
     

@@ -1,6 +1,9 @@
 import siftproperty
+import abc
 
 class SiftState(object):
+
+    __metaclass__ = abc.ABCMeta
 
     def __init__(self):
         self._states = []
@@ -9,7 +12,13 @@ class SiftState(object):
     def version(self):
         return siftproperty.version()
        
-    def onEnter(self, context):
+       
+    @abc.abstractmethod
+    def onEnter(self):
+        pass
+        
+    @abc.abstractmethod
+    def onLeave(self):
         pass
         
     def init_states(self, state_list ):
