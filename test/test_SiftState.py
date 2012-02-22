@@ -90,7 +90,7 @@ class TestSiftState(unittest.TestCase):
         test_obj.set_state(0) # green
         self.assertEqual(test_states[0], test_obj.prev_state())
         
-        # red to green at top
+        # green to red at bottom
         test_obj.roll_at_bottom_state(True)
         self.assertEqual(test_states[2], test_obj.prev_state())
         
