@@ -8,7 +8,8 @@ class SiftState(object):
     def __init__(self):
         self._states = []
         self._current_state = None
-        self._reset_at_top_state = False
+        self._roll_at_top_state = False
+        self._roll_at_bottom_state = False
 
     def version(self):
         return siftproperty.version()
@@ -17,11 +18,13 @@ class SiftState(object):
         if self._current_state == None:
             raise Exception("Uninitialized", "State not initialized")
             
-        if self._current_state < len(self._states):
+        
+        if self._current_state < len(self._states) - 1:
             self._current_state += 1
         else:
-            if self._reset_at_top_state:
+            if self._roll_at_top_state:
                 self._current_state = 0
+                
         return self._states[self._current_state]
                 
                 
@@ -29,11 +32,11 @@ class SiftState(object):
         if self._current_state == None:
             raise Exception("Uninitialized", "State not initialized")
             
-        if self._current_state > len(self._states):
-            self._current_state += 1
+        if self._current_state > 0:
+            self._current_state -= 1
         else:
-            if self._reset_at_top_state:
-                self._current_state = 0
+            if self._roll_at_bottom_state:
+                self._current_state = len(self._states) -1
         return self._states[self._current_state]
        
        
@@ -45,10 +48,18 @@ class SiftState(object):
     def on_leave(self):
         pass
     
-    def set_state(self, desired_state):
-        """set to desired state"""
+    def set_state(self, desired_state=0):
+        """set to desired state: returns success or fail or raise if not ready"""
         if self._current_state == None:
             raise Exception("Uninitialized", "State not initialized")
+        
+        try: 
+            self._states[desired_state]
+            self._current_state = desired_state
+            return True
+        except IndexError:
+            return False
+
         
     def init_states(self, state_list ):
         self._states = state_list
@@ -61,4 +72,15 @@ class SiftState(object):
         del self._states
         self._current_state = None
         
+        
+    def roll_at_top_state(self, bool):
+        """Decide if top state rolls to bottom state"""
+        self._roll_at_top_state = bool
+        
+    def roll_at_bottom_state(self, bool):
+        """Decide if top state rolls to bottom state"""
+        self._roll_at_bottom_state = bool
+        
     state = property(get_state, init_states, del_state, "State register.")
+    
+    

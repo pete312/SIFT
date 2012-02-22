@@ -31,7 +31,7 @@ class TestSiftState(unittest.TestCase):
         self.assertEqual(my_states[0], self.sift_state.get_state() )
         
     def test2_unregistered_operations(self):
-        """Assert raise exception when state is not initialized"""
+        """Assert raise exception when state is not ready"""
         self.failUnlessRaises ( Exception ,self.sift_state.next_state )
         self.failUnlessRaises ( Exception ,self.sift_state.prev_state )
         self.failUnlessRaises ( Exception ,self.sift_state.set_state, "dummy" )
@@ -42,7 +42,7 @@ class TestSiftState(unittest.TestCase):
         test_obj.init_states(self.alert_states)
         self.assertEqual(self.alert_states[0] , test_obj.get_state() )
         
-        test_obj.set_state(self.alert_states[2])
+        test_obj.set_state(2)
         self.assertEqual(self.alert_states[2], test_obj.get_state())
         
     def test4_state_change_up(self):
@@ -63,7 +63,7 @@ class TestSiftState(unittest.TestCase):
         test_obj = self.sift_state
         test_obj.init_states(self.alert_states)
         
-        test_obj.set_state(my_states[2])
+        test_obj.set_state(2)
         self.assertEqual(my_states[2] , test_obj.get_state() )
         self.assertEqual(my_states[1] , test_obj.prev_state() ) 
         self.assertEqual(my_states[1] , test_obj.get_state() )
@@ -71,11 +71,29 @@ class TestSiftState(unittest.TestCase):
         self.assertEqual(my_states[0] , test_obj.get_state() )
         
 
-            
         
     def test5_state_change_boundries(self):
-        """ Test that Red changes to Green """
-        self.assertTrue(False, "TODO: Not yet tested") 
+        """ Test that Red changes to Green going up and so on."""
+        test_states = self.traffic_states
+        test_obj = self.sift_state
+        test_obj.init_states(test_states)
+        
+        # red stays red at top
+        test_obj.set_state(2) # red
+        self.assertEqual(test_states[2], test_obj.next_state())
+        
+        # red to green at top
+        test_obj.roll_at_top_state(True)
+        self.assertEqual(test_states[0], test_obj.next_state())
+        
+        # Green stays green at bottom
+        test_obj.set_state(0) # green
+        self.assertEqual(test_states[0], test_obj.prev_state())
+        
+        # red to green at top
+        test_obj.roll_at_bottom_state(True)
+        self.assertEqual(test_states[2], test_obj.prev_state())
+        
         
     @classmethod
     def state_up_callback():
