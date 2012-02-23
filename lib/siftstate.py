@@ -11,6 +11,7 @@ class SiftState(object):
         self._roll_at_top_state = False
         self._roll_at_bottom_state = False
 
+    @classmethod
     def version(self):
         return siftproperty.version()
         
@@ -81,6 +82,6 @@ class SiftState(object):
         """Decide if top state rolls to bottom state"""
         self._roll_at_bottom_state = bool
         
-    state = property(get_state, init_states, del_state, "State register.")
+    states = property(get_state, init_states, del_state, "State register.")
     
     

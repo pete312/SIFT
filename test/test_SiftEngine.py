@@ -1,6 +1,7 @@
 #!python
 import unittest
 import siftengine
+import siftproperty
 
 
 class TestHelper(siftengine.SiftEngine):
@@ -19,7 +20,7 @@ class TestSiftEngine(unittest.TestCase):
     
     def test_inherit_and_instantiate(self):
         self.assertTrue( self.sift_engine )
-        self.assertEqual( 0.1, self.sift_engine.version() )
+        self.assertEqual( siftproperty.version(), self.sift_engine.version() )
         
     def test_sift_engine_finds_test_string(self):
         pass
