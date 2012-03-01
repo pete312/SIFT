@@ -1,5 +1,8 @@
 import siftproperty
 
+class Empty(Exception):
+    pass
+    
 class SiftData(object):
     def __init__(self):
         
@@ -7,12 +10,23 @@ class SiftData(object):
         self.dic_data = {}
     
     @classmethod 
-    def version():
+    def version(h):
         return siftproperty.version()
+        
+        
+    def _thow_on_empty(self, associative=False):
+        if associative:
+            if len(self.dic_data) == 0:
+                raise Empty("No data")
+        else:
+            if len(self.list_data) == 0:
+                raise Empty("No data")
     
     def pop_back(self):
         """pop off the back of the list"""
+        self._thow_on_empty()
         return self.list_data.pop()
+
         
     def push_back(self, data):
         """push to the back of the list"""
@@ -20,7 +34,8 @@ class SiftData(object):
         
     def pop_front(self):
         """pop off the front of the list"""
-        return self.list_data.pop()
+        self._thow_on_empty()
+        return self.list_data.pop(0)
         
     def push_front(self, data):
         """push to the front of the list"""
@@ -31,14 +46,16 @@ class SiftData(object):
         self.dic_data[key] = data
         
     def peek(self, key):
-         """get value if exists"""
-        return False
+        """get value if exists"""
+        self._thow_on_empty(True)
+        return self.dic_data[key]
         
     def has(self, key):
-        return self.dic_data.has_key()
+        return self.dic_data.has_key(key)
 
     def delete(self):
-        self._dic_data.clear()
+        self.dic_data.clear()
+        self.list_data = []
         
     
     

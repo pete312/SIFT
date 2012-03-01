@@ -1,4 +1,4 @@
-#!python
+#!/usr/bin/env python
 import unittest
 import siftstate
 import siftproperty

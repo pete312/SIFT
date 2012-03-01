@@ -1,4 +1,4 @@
-#!python
+#!/usr/bin/env python
 import unittest
 import siftengine
 import siftproperty
@@ -43,11 +43,11 @@ class TestSiftEngine(unittest.TestCase):
     def setUp(self):
         self.sift_engine = TestHelper();
     
-    def test_construction(self):
+    def test0_construction(self):
         self.assertTrue( self.sift_engine )
         self.assertEqual( siftproperty.version(), self.sift_engine.version() )
         
-    def test_add_expression(self):
+    def test1_add_expression(self):
         test_obj = self.sift_engine
         test_obj.prepare()
         empty = TestHelper()
