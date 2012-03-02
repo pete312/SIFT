@@ -9,8 +9,8 @@ class SiftEngine(object):
     def expressions(self):
         pass
     
-    
-    def version(self):
+    @staticmethod
+    def version():
         return siftproperty.version()
 
     @abc.abstractmethod

@@ -9,8 +9,8 @@ class SiftData(object):
         self.list_data = []
         self.dic_data = {}
     
-    @classmethod 
-    def version(h):
+    @staticmethod 
+    def version():
         return siftproperty.version()
         
         

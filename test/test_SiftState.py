@@ -19,7 +19,7 @@ class TestSiftState(unittest.TestCase):
         self.traffic_states = ["green","amber","red"]
         self.alert_states = ["good","bad","downright ugly"]
         
-    def test1_basic_inheritence(self):
+    def test0_construct(self):
         self.assertTrue( self.sift_state )
         self.assertEqual( siftproperty.version() , self.sift_state.version() )
             

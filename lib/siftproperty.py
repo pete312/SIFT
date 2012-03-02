@@ -1,4 +1,4 @@
 # SIFT property file.
 
 def version():
-    return "0.1"
+    return str("0.1.2")

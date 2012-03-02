@@ -11,7 +11,7 @@ class TestSiftData(unittest.TestCase):
         self.traffic_data = ["green","amber","red"]
 
         
-    def test1_basics(self):
+    def test0_construct(self):
         """standard class function tests"""
         self.assertTrue( self.sift_data )
         self.assertEqual( siftdata.SiftData.version() , siftproperty.version() )
@@ -48,7 +48,7 @@ class TestSiftData(unittest.TestCase):
         self.failUnlessRaises(siftdata.Empty, test_obj.peek, 4 )
         self.failUnlessRaises(siftdata.Empty, test_obj.pop_front)
         self.failUnlessRaises(siftdata.Empty, test_obj.pop_back )
-        
+         
         
 if __name__ == "__main__":
     unittest.main()

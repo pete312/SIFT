@@ -11,8 +11,8 @@ class SiftState(object):
         self._roll_at_top_state = False
         self._roll_at_bottom_state = False
 
-    @classmethod
-    def version(self):
+    @staticmethod
+    def version():
         return siftproperty.version()
         
     def next_state(self):

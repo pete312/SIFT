@@ -43,7 +43,7 @@ class TestSiftEngine(unittest.TestCase):
     def setUp(self):
         self.sift_engine = TestHelper();
     
-    def test0_construction(self):
+    def test0_construct(self):
         self.assertTrue( self.sift_engine )
         self.assertEqual( siftproperty.version(), self.sift_engine.version() )
         
