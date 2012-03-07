@@ -67,8 +67,7 @@ class MyMockDatabaseStream(siftstream.SiftStream):
         self.execute(statement)
         
         return self.data
-        
-    
+           
     def write(self, data):
         pass
         
@@ -154,7 +153,13 @@ class TestSiftStream(unittest.TestCase):
         test_obj.open(DBResource("validuser", "validpass", "validserver"))
         
         statement = "select whatever"
-        print test_obj.read(statement)
+        row_number = 0
+        for row in test_obj.read(statement):
+            row_number += 1
+            self.assertTrue(row_number, row[0])  
+        
+        test_obj.close()
+        
         
         
         
