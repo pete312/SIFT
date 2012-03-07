@@ -12,7 +12,7 @@ import siftproperty
 
 # Some databases like MS SQL have blocking data queues (Ref: Broker Server) which
 # return data when an inserted row triggers the unlock. This performs exactly like 
-# a blocking tcp socket read. seek is not revelant 
+# a blocking tcp socket read. seek and tell are not revelant but can be implemented if the dataset has a sequence id or other watermark as shown in the mock.
 
 class DBResource(object):
     def __init__(self, username, password, servername):
@@ -37,35 +37,77 @@ class MyMockDatabaseStream(siftstream.SiftStream):
     def __init__(self):
         self.handle = None
         self.results = None
+        self.data = None
+
+        self.sequence_id = 0
+        self.get_sql = "select stuff from data where sequence_id > "
+    
+    def __iter__(self):
+        return self
+    
+    def next(self):
+        raise StopIteration()
         
     def open(self, resource ):
         if not isinstance(resource, DBResource):
             raise Exception("resource mismatch")
-        if (resource.username == "validname" and \
-            resource.password == "validpass" and \
-            resource.servername == "validserver" ) :
-            raise Exception("Creds are not valid ones.")
+        if (resource.username != "validname" and \
+            resource.password != "validpass" and \
+            resource.servername != "validserver" ) :
+            raise Exception("Credentials are not valid ones.")
         self.handle = True
         
     def close(self):
-        pass
+        self.handle = None
+        self.results = None
+        self.data = None
         
     def read(self, params ):
-        self.handle.prepare() 
-        pass
+        statement = self.prepare( self.get_sql + str( self.sequence_id ) )
+        self.execute(statement)
+        
+        return self.data
+        
     
     def write(self, data):
         pass
         
-    def prepare(query):
+    def prepare(self, query):
         """illistritive prepare"""
-        if query.startswith("select"):
-            self.results = [["result 1"] ,["result 2"] , ["result 3"], ["result 4"]]
+        self.results = None
+        if self.handle == None:
+            raise Exception("mock database not open")
+        if query.startswith("select") :
+            self.results = [[1,"row 1"] ,[2,"row 2"] , [3,"row 3"], [4,"row 4"]]
         else:
-            raise Exception("ONLY SELECTS PLEASE !")
+            raise Exception("ONLY SELECTS PLEASE ! query = [" + query + "]")
             
-    def seek(self):
-        pass
+        return [1, "successful statement" ]
+            
+    def execute(self, statement):
+        if statement != [1, "successful statement"]:
+            raise Exception("malformed statement")
+        self.data = self.results
+        self.sequence_id = 1
+        return self.data
+            
+    def seek(self, postion, whence=0):
+        assert(position > 0)
+        
+        if whence < 0:
+            if self.sequence_id - position < 0:
+                raise Exception("relative seek error")
+            self.sequence_id = self.sequence_id - position
+        elif whence > 0:
+            self.sequence_id = self.sequence_id + position
+        else:
+            self.sequence_id = position
+       
+        statement = self.prepare( self.get_sql + self.sequence_id )
+        self.execute(statement)
+        
+    def tell(self):
+        return self.sequence_id
 
 # class MyFileStream(siftstream.SiftStream):
     # pass
@@ -81,11 +123,41 @@ class TestSiftStream(unittest.TestCase):
         
         test_obj = self.sift_stream
         self.assertTrue(test_obj)
-        
 
+    def test1_mock_db_class_works(self):
+        test_obj = self.sift_stream
+        resource = DBResource("testuser","testpass","testserver")
+        self.assertRaises(Exception, test_obj.open, resource)    
+        resource = DBResource("valieduser","validpass","validserver")
+        self.assertRaises(Exception, test_obj.open, None)
+        
+        test_obj.open(resource)
+        self.assertRaises(Exception, test_obj.prepare, "insert into whatever")
+     
+        self.assertRaises(Exception, test_obj.execute, None)
+        
+        #test a good case.
+        statement = test_obj.prepare("select whatever")
+        results = test_obj.execute(statement)
+        
+        self.assertTrue( len(results) > 0 )
+        
+        for row in results:
+            self.assertEqual(len(row) ,  2 )
+            
+        self.assertTrue( test_obj.tell()  > 0 )
+    
+        
+    def test2_getting_something_out_of_it(self):
+        test_obj = self.sift_stream
+        self.assertEqual(test_obj.tell(), 0)
+        test_obj.open(DBResource("validuser", "validpass", "validserver"))
+        
+        statement = "select whatever"
+        print test_obj.read(statement)
         
         
-         
+        
 
 if __name__ == "__main__":
     unittest.main()
