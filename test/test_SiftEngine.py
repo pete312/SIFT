@@ -1,5 +1,13 @@
 #!/usr/bin/env python
 import unittest
+import sys
+import os
+from os.path import dirname, normpath, join, abspath
+
+basedir = dirname(abspath(sys.argv[0]))
+libpath = normpath(join(basedir, "../lib"))
+sys.path.append(libpath)
+
 import siftengine
 import siftproperty
 import siftstate
@@ -7,7 +15,7 @@ import siftdata
 import siftstream
 import collections
 import logging
-import os
+
 
 class CachingStream(siftstream.SiftStream,siftdata.SiftData):
     def __init__(self):

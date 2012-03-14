@@ -1,5 +1,13 @@
 #!/usr/bin/env python
 import unittest
+import sys
+from os.path import dirname, normpath, join, abspath
+
+basedir = dirname(abspath(sys.argv[0]))
+libpath = normpath(join(basedir, "../lib"))
+sys.path.append(libpath)
+
+
 import siftstate
 import siftproperty
 
