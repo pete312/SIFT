@@ -40,3 +40,7 @@ class SiftStream( object ):
         """this may not be needed by some resources such as databases in which case you can implement with the no op function (pass)"""
         pass
         
+    @abc.abstractmethod    
+    def tell(self):
+        """implement tell"""
+        pass    

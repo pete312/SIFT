@@ -14,6 +14,7 @@ import siftproperty
 # return data when an inserted row triggers the unlock. This performs exactly like 
 # a blocking tcp socket read. seek and tell are not revelant but can be implemented if the dataset has a sequence id or other watermark as shown in the mock.
 
+
 class DBResource(object):
     def __init__(self, username, password, servername):
         self._username = username
@@ -34,10 +35,20 @@ class DBResource(object):
 
 class MyMockDatabaseStream(siftstream.SiftStream):
     
+    @property
+    def FROM_END():
+        return 2
+    
+    @property
+    def FROM_CURRENT():
+        return 1
+    
+    @property
+    def FROM_ABSOLUTE():
+        return 0
+    
     def __init__(self):
-        self.handle = None
-        self.results = None
-        self.data = None
+        self.close()
 
         self.sequence_id = 0
         self.get_sql = "select stuff from data where sequence_id > "
@@ -59,12 +70,20 @@ class MyMockDatabaseStream(siftstream.SiftStream):
         
     def close(self):
         self.handle = None
-        self.results = None
-        self.data = None
+        self.results = []
+        self.data = []
+        self.cursor = 0
         
-    def read(self, params ):
+    def read(self, size=-1 ):
+        # size is implemented to return the number of rows and not number of bites
+        
+        #if len(self.data) == self.cursor and self.cursor > 0:
+            
         statement = self.prepare( self.get_sql + str( self.sequence_id ) )
         self.execute(statement)
+        self.seek(0,2)
+        
+        #if size < 0:
         
         return self.data
            
@@ -90,10 +109,10 @@ class MyMockDatabaseStream(siftstream.SiftStream):
         self.sequence_id = 1
         return self.data
             
-    def seek(self, postion, whence=0):
-        assert(position > 0)
+    def seek(self, position, whence=0):
         
-        if whence < 0:
+        if whence == 0:
+            assert (postion > 0)
             if self.sequence_id - position < 0:
                 raise Exception("relative seek error")
             self.sequence_id = self.sequence_id - position
@@ -102,14 +121,12 @@ class MyMockDatabaseStream(siftstream.SiftStream):
         else:
             self.sequence_id = position
        
-        statement = self.prepare( self.get_sql + self.sequence_id )
+        statement = self.prepare( self.get_sql + str(self.sequence_id) )
         self.execute(statement)
         
     def tell(self):
         return self.sequence_id
-
-# class MyFileStream(siftstream.SiftStream):
-    # pass
+        
 
 
 class TestSiftStream(unittest.TestCase):
@@ -151,15 +168,16 @@ class TestSiftStream(unittest.TestCase):
         test_obj = self.sift_stream
         self.assertEqual(test_obj.tell(), 0)
         test_obj.open(DBResource("validuser", "validpass", "validserver"))
+        test_obj.seek(0,MyMockDatabaseStream.FROM_END)
         
-        statement = "select whatever"
         row_number = 0
-        for row in test_obj.read(statement):
+        for row in test_obj.read():
             row_number += 1
-            self.assertTrue(row_number, row[0])  
-        
+            self.assertEqual(row_number, row[0]) 
+            
         test_obj.close()
         
+       
         
         
         
