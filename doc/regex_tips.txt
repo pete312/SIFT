@@ -1,8 +1,10 @@
 At times there will be errors from the regex. Here is some debugging tips to help overcome them.
 
+REGULAR EXPRESSION SYNTAX ERRORS
+
 UNDERSTANDING THE ERROR:
 
-This example showed an error 
+This example showed an error which in its rqw form spit out this.
 
     Caught an expression error with message: nothing to repeat
             regex sequecne # : 1
@@ -24,14 +26,16 @@ This example showed an error
         raise error, v # invalid expression
     sre_constants.error: nothing to repeat
 
-This is a lot but the most important thing is the first 3 lines. 
-Line 1 is saying it found a "nothing to repeat" message which is that a repeater (* or +) is malformed. 
-Line 2 is saying that it found it on the 1st line of the sequence of the parser meaning it was during the 1st add_regex() call
+This is a lot of text but the most important thing is the first 3 lines. 
+Line 1 is saying it found a "nothing to repeat" message from the regex parser which is that a repeater (* or +) is malformed. 
+Line 2 is saying that it found it on the 1st line of the sequence of the sift parser meaning it was during the 1st add_regex() call. 
 Line 3 shows the regex line which is surrounded by pipes.
-The rest of the error is the stack trace which goes deep into python re module. Read from bottom up look for the file that you wrote to locate the line number of the add_regex function call.
+The rest of the error is the stack trace which goes deep into python re module. Read from bottom up search for the file that you wrote to locate the line number of the add_regex function call. Mine was at line 29 of the logparser.py in the prepare() function.
+
+     File "/cygdrive/c/src/SIFT/bin/logparser.py", line 29, in prepare
+        self.add_regex( lead + "Message sequence started initialization. (.+)")
 
 If your not familar with regex syntax it may be a good idea to read the re pydoc http://docs.python.org/library/re and experiment with an online regex helper such as http://regexpal.com
- 
 
 DEBUGGING IT:
 
@@ -60,8 +64,9 @@ And you should see a repeat of the error...
 
 Because the error cites a repeater at fault I know that its one of the + operators in the regex string. I messed up the first one which is (+d) which makes no sence because a repeater must have a leading character or character type such as .+ or \d+ or 1+. I meant to say at least one decimal number which is expressed as \d+
 
-I enter the correction and if this works you will see a _sre.SRE_Pattern object returning. 
+I enter the correction and if this works you will see a _sre.SRE_Pattern object returning with means no regex syntax problems exixt in the expression.
 
     >>> re.compile("\.\.(\d+)\:Message sequence started initialization. (.+)")
     <_sre.SRE_Pattern object at 0xc2a648>
     >>>
+    
