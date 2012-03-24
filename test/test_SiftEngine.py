@@ -177,7 +177,8 @@ class TestSiftEngine(unittest.TestCase):
 
         
         resource.close()
-    
+        
+        
     
 if __name__ == "__main__":
 	unittest.main()
