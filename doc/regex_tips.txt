@@ -1,0 +1,67 @@
+At times there will be errors from the regex. Here is some debugging tips to help overcome them.
+
+UNDERSTANDING THE ERROR:
+
+This example showed an error 
+
+    Caught an expression error with message: nothing to repeat
+            regex sequecne # : 1
+            regex string : |\.\.(+d)\:Message sequence started initialization. (.+)|
+
+
+    Traceback (most recent call last):
+      File "./sift.py", line 61, in <module>
+        main()
+      File "./sift.py", line 43, in main
+        log.prepare()
+      File "/cygdrive/c/src/SIFT/bin/logparser.py", line 29, in prepare
+        self.add_regex( lead + "Message sequence started initialization. (.+)")
+      File "/cygdrive/c/src/SIFT/lib/siftengine.py", line 43, in add_regex
+        obj = re.compile(regex)
+      File "/usr/lib/python2.6/re.py", line 190, in compile
+        return _compile(pattern, flags)
+      File "/usr/lib/python2.6/re.py", line 245, in _compile
+        raise error, v # invalid expression
+    sre_constants.error: nothing to repeat
+
+This is a lot but the most important thing is the first 3 lines. 
+Line 1 is saying it found a "nothing to repeat" message which is that a repeater (* or +) is malformed. 
+Line 2 is saying that it found it on the 1st line of the sequence of the parser meaning it was during the 1st add_regex() call
+Line 3 shows the regex line which is surrounded by pipes.
+The rest of the error is the stack trace which goes deep into python re module. Read from bottom up look for the file that you wrote to locate the line number of the add_regex function call.
+
+If your not familar with regex syntax it may be a good idea to read the re pydoc http://docs.python.org/library/re and experiment with an online regex helper such as http://regexpal.com
+ 
+
+DEBUGGING IT:
+
+If the error is not obvious to you, you can always debug it by trying to modify it. Instead of modifying the orgional, I like to experiment with the regex in question. To do this; pop open a python session by typing python at the command line console.  
+
+    $ python
+    Python 2.6.5 (r265:79063, Jun 12 2010, 17:07:01)
+    [GCC 4.3.4 20090804 (release) 1] on cygwin
+    Type "help", "copyright", "credits" or "license" for more information.
+
+At the prompt import the re module and try to compile the expression.
+
+    >>> import re
+    >>> re.compile("\.\.(+d)\:Message sequence started initialization. (.+)")
+
+And you should see a repeat of the error...
+    
+    Traceback (most recent call last):
+    File "<stdin>", line 1, in <module>
+    File "/usr/lib/python2.6/re.py", line 190, in compile
+    return _compile(pattern, flags)
+    File "/usr/lib/python2.6/re.py", line 245, in _compile
+    raise error, v # invalid expression
+    sre_constants.error: nothing to repeat
+
+
+Because the error cites a repeater at fault I know that its one of the + operators in the regex string. I messed up the first one which is (+d) which makes no sence because a repeater must have a leading character or character type such as .+ or \d+ or 1+. I meant to say at least one decimal number which is expressed as \d+
+
+I enter the correction and if this works you will see a _sre.SRE_Pattern object returning. 
+
+    >>> re.compile("\.\.(\d+)\:Message sequence started initialization. (.+)")
+    <_sre.SRE_Pattern object at 0xc2a648>
+    >>>
