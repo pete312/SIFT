@@ -14,6 +14,7 @@ class LOGTest(siftengine.SiftEngine):
         siftengine.SiftEngine.__init__(self)
         self.leader = '\.\.(\d+)\: '
         self._found = None
+        self._group = []
     
     @property
     def name(self):
@@ -24,22 +25,35 @@ class LOGTest(siftengine.SiftEngine):
         return self._found
         
     def on_match(self):
+        '''this callback is triggered when an engine becomes fully matched'''
         print "found a match for" , self.__class__
         
-    def on_triggered(self):
+        print "information gleened from the parse was:"
+        line = 1
+        for group in self._group:
+            print "line", line, " data  ..", group
+            line += 1
+        self.reset()
+        
+    def on_triggered(self,pattern):
+        '''this callback is triggered every time a line is found that is a submatch for the engine'''
         print "triggered a sub match for" , self.__class__, self._found
+        self._group.append(pattern.groups())
+        
         
     def prepare(self):
+        '''User must enter the expressions that decribe the paragraph this engine is looking for'''
         lead = self.leader
         self.add_regex( lead + "Message sequence started initialization. (.+)")
         self.add_regex( lead + "Message sequence two (.+)")
         self.add_regex( lead + "Message sequence three (.+)")
         self.add_regex( lead + "Message sequence four (.+)")
         self.add_regex( lead + "Message sequence initialization five (.+)")
-        self._found = 0
+        self.reset()
         
     def reset(self):
-        pass
+        '''This is reset for the engine. If not called the parser will never try to rematch anything'''
+        self._found = 0
     
     def parse(self,stream):
             
@@ -48,7 +62,7 @@ class LOGTest(siftengine.SiftEngine):
             pattern = self._compiled[self._found].match(line)
             if pattern:
                 self._found += 1
-                self.on_triggered()
+                self.on_triggered(pattern)
                 
                 print "-- " , self._found, len(self._compiled)
                 

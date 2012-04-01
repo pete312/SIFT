@@ -30,7 +30,7 @@ def main():
     import null
     import logstream
     
-    engines = []
+    
     
     targetfile = normpath(join(PACKAGEPATH, 'test/samplelog1.txt'))
     #targetfile = join(basepath, 'test/samplelog1.txt')
@@ -40,26 +40,36 @@ def main():
         print "No input file", targetfile
         sys.exit(2)
         
+    # this is a garbage collector and might rename it to be called that.
+    null = null.Null()
+    
+    # create the custom log parser object
     log = logparser.LOGTest()
     log.prepare()
     
-    null = null.Null()
+    # display what this engine will be looking for in the stream.
+    print "looking for paragraph"
+    for expression in log.expressions:
+        print expression
+    print 
     
-    
-    
+    # setup the stream which points to a text file in the test path
     stream = logstream.LogStream()
     stream.open(targetfile)
     
-    
+    # make the collection of engines. 
+    # The null engine is important and should always be at the bottom to collect the garbage.
+    engines = []
     engines.append(log)
     engines.append(null)
     
+    # a simple while have data parse it with each engine. How simple is that!
     while not stream.at_end:
         for e in engines:
             e.parse(stream)
             #e.debug()
     
-    print log.expressions
+    
 
 
 
