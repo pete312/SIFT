@@ -2,6 +2,10 @@
 
 PYTHON=python
 
+TESTBASE=$(dirname $0)
+
+cd $TESTBASE
+
 for file in `ls test_*py` 
 do
     echo "**********************************************************************"
