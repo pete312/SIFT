@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys
 import os
+import time
 from os.path import dirname, normpath, join, abspath
 
 PACKAGEPATH = ''
@@ -26,6 +27,7 @@ def init():
 def main():
 
     import logparser
+    import null
     import logstream
     
     engines = []
@@ -35,22 +37,27 @@ def main():
     print targetfile
     
     if not os.path.exists(targetfile):
+        print "No input file", targetfile
         sys.exit(2)
-    else:
-        print "It exists"
         
     log = logparser.LOGTest()
     log.prepare()
+    
+    null = null.Null()
+    
+    
     
     stream = logstream.LogStream()
     stream.open(targetfile)
     
     
     engines.append(log)
+    engines.append(null)
     
-    
-    for e in engines:
-        e.parse(stream)
+    while not stream.at_end:
+        for e in engines:
+            e.parse(stream)
+            #e.debug()
     
     print log.expressions
 

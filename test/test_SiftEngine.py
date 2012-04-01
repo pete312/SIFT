@@ -92,10 +92,6 @@ class TestEngine(siftengine.SiftEngine, siftstate.SiftState):
     def trigger_count(self):
         return self._trigger_count
     
-    @property
-    def expressions(self):
-        return self._expressions
-        
     def prepare(self):
         self.add_regex("regex one")
         self.add_regex("regex two")
@@ -182,4 +178,6 @@ class TestSiftEngine(unittest.TestCase):
     
 if __name__ == "__main__":
 	unittest.main()
+    
+    
     

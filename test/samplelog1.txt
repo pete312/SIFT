@@ -2,10 +2,10 @@
 ..2: Message sequence two is good.
 ..3: Message sequence three is not fatal but not great.
 ..4: Message sequence four is green
-..5: Atominious message one
-..6: Atominious message two
-..7: Atominious message three
+..5: Autonomus message one
+..6: Autonomus message two
+..7: Autonomus message three
 ..8: Message sequence initialization five complete
-..9: Atominious message four
+..9: Autonomus message four
 
 

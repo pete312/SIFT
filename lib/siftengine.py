@@ -11,10 +11,15 @@ class SiftEngine(object):
         self._expressions = []
         self._compiled = []
         self._initialized = True
+        self._matched = False
     
-    @abc.abstractproperty
+    @property
     def expressions(self):
-        pass
+        return self._expressions
+        
+    @property
+    def matched(self):
+        return self._matched
     
     @staticmethod
     def version():
@@ -68,5 +73,7 @@ class SiftEngine(object):
         #TODO define in siftstate
         pass
         
+    def debug(self):
+        print self.__class__
    
         

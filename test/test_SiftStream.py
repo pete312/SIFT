@@ -85,15 +85,11 @@ class MyMockDatabaseStream(siftstream.SiftStream):
         
     def read(self, size=-1 ):
         # size is implemented to return the number of rows and not number of bites
-        
-        #if len(self.data) == self.cursor and self.cursor > 0:
-            
+                    
         statement = self.prepare( self.get_sql + str( self.sequence_id ) )
         self.execute(statement)
         self.seek(0,2)
-        
-        #if size < 0:
-        
+
         return self.data
            
     def write(self, data):
@@ -187,7 +183,9 @@ class TestSiftStream(unittest.TestCase):
         test_obj.close()
         
        
-        
+    def test3_append_to_resource_after_read_hits_the_bottom(self):
+        '''need to test that the stream can detect when data is added to the stream'''
+        self.assertTrue(False) # TODO write this test
         
         
 
