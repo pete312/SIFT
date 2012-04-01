@@ -1,12 +1,5 @@
 #!/usr/bin/env python
-import sys
-import os
-
 import siftengine
-
-
-def test():
-    print "OK"
    
 
 class Null():

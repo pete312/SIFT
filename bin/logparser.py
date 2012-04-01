@@ -1,13 +1,7 @@
 #!/usr/bin/env python
-import sys
-import os
 
 import siftengine
 
-
-def test():
-    print "OK"
-   
 
 class LOGTest(siftengine.SiftEngine):
     def __init__(self):
