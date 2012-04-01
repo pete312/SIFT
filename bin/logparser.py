@@ -31,7 +31,7 @@ class LOGTest(siftengine.SiftEngine):
         
     def on_triggered(self,pattern):
         '''this callback is triggered every time a line is found that is a submatch for the engine'''
-        print "triggered a sub match for" , self.__class__, self._found
+        print "triggered a sub match for" , self.__class__, self._found, "of" , len(self._compiled)
         self._group.append(pattern.groups())
         
         
@@ -57,8 +57,6 @@ class LOGTest(siftengine.SiftEngine):
             if pattern:
                 self._found += 1
                 self.on_triggered(pattern)
-                
-                print "-- " , self._found, len(self._compiled)
                 
                 if self._found == len(self._compiled):
                     self._matched = True

@@ -1,7 +1,5 @@
 #!/usr/bin/env python
-import siftengine
-   
-
+  
 class Null():
     def __init__(self):
         self.trash = None
@@ -16,9 +14,3 @@ class Null():
     def debug(self):
         print self.__class__, "contains", self.trash
                 
-                
-            
-                
-            
-    
-    
