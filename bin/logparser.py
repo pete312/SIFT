@@ -9,6 +9,11 @@ class LOGTest(siftengine.SiftEngine):
         self.leader = '\.\.(\d+)\: '
         self._found = None
         self._group = []
+        self._total_match_count = 0
+        
+    @property
+    def total_match_count(self):
+        return self._total_match_count
     
     @property
     def name(self):
@@ -27,6 +32,7 @@ class LOGTest(siftengine.SiftEngine):
         for group in self._group:
             print "line", line, " data  ..", group
             line += 1
+        self._total_match_count += 1
         self.reset()
         
     def on_triggered(self,pattern):
@@ -49,22 +55,6 @@ class LOGTest(siftengine.SiftEngine):
         '''This is reset for the engine. If not called the parser will never try to rematch anything'''
         self._found = 0
     
-    def parse(self,stream):
-            
-        while (not stream.at_end) and (not self._matched):
-            line = stream.read()
-            pattern = self._compiled[self._found].match(line)
-            if pattern:
-                self._found += 1
-                self.on_triggered(pattern)
-                
-                if self._found == len(self._compiled):
-                    self._matched = True
-                    self.on_match()
-                
-            else:
-                stream.unread() # back up the pointer to pos before read()
-                return
                 
     def debug(self):
         print self.__class__, "found", self._found

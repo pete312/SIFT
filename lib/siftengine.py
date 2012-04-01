@@ -12,6 +12,7 @@ class SiftEngine(object):
         self._compiled = []
         self._initialized = True
         self._matched = False
+        self._found = 0
     
     @property
     def expressions(self):
@@ -63,6 +64,23 @@ class SiftEngine(object):
             raise
         self._compiled.append(obj)
         return obj
+        
+    def parse(self,stream):
+            
+        while (not stream.at_end) and (not self._matched):
+            line = stream.read()
+            pattern = self._compiled[self._found].match(line)
+            if pattern:
+                self._found += 1
+                self.on_triggered(pattern)
+                
+                if self._found == len(self._compiled):
+                    self._matched = True
+                    self.on_match()
+                
+            else:
+                stream.unread() # back up the pointer to pos before read()
+                return
         
     
     def get_segment(self, line_number=None):
