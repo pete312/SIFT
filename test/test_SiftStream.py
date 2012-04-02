@@ -191,21 +191,21 @@ class TestSiftStream(unittest.TestCase):
         
     def test3_test_sift_filestream(self):
         """test provided File stream """
-        tempfile = normpath (join(BASEDIR, "file_stream.txt"))
+        TEMPFILE = normpath (join(BASEDIR, "file_stream.txt"))
         
         
     
     
     def test3_append_to_resource_after_read_hits_the_bottom(self):
         '''need to test that the stream can detect when data is added to the stream'''
-        tempfile = normpath (join(BASEDIR, "append_test.txt"))
-        ofile = open(tempfile, "w")
+        TEMPFILE = normpath (join(BASEDIR, "append_test.txt"))
+        ofile = open(TEMPFILE, "w")
         ofile.write("line 1\n")        
         ofile.write("line 2\n")
         ofile.close()
         
         reader =  siftstream.FileStream()
-        reader.open(tempfile)
+        reader.open(TEMPFILE)
         
         self.assertEqual(0, reader.tell())
         
@@ -217,7 +217,7 @@ class TestSiftStream(unittest.TestCase):
         self.assertEqual(14, reader.tell()) # platform specific
         self.assertTrue(reader.at_end())
         
-        ofile = open(tempfile, "a")
+        ofile = open(TEMPFILE, "a")
         ofile.write("line 3\n")
         ofile.close()
         
@@ -230,7 +230,7 @@ class TestSiftStream(unittest.TestCase):
         self.assertEqual(reader.read(), "")
         self.assertTrue(reader.at_end())
         
-        ofile = open(tempfile, "a")
+        ofile = open(TEMPFILE, "a")
         ofile.write("line 4\n")
         ofile.close()
         
@@ -241,17 +241,25 @@ class TestSiftStream(unittest.TestCase):
         self.assertEqual(reader.read(), "")
         self.assertTrue(reader.at_end())
         
-        os.unlink(tempfile)
+        
+        writer = siftstream.FileStream()
+        writer.open(TEMPFILE, "a")
+        writer.write("line 5\n")
+        writer.close()
+        
+        self.assertEqual(reader.read() , "line 5\n")
+        
+        os.unlink(TEMPFILE)
         
         
     def test_tailing_works_on_platform(self):
         '''test tailing a file just in case it does not work the same on all platforms''' 
-        tempfile = normpath (join(BASEDIR, "append_test.txt"))
-        ofile = open(tempfile, "w")
+        TEMPFILE = normpath (join(BASEDIR, "append_test.txt"))
+        ofile = open(TEMPFILE, "w")
         ofile.write("line 1\n")
         ofile.close()
         
-        ifile = open(tempfile, "r")
+        ifile = open(TEMPFILE, "r")
         buf = ifile.read()
 
         self.assertEqual(buf, "line 1\n")
@@ -263,7 +271,7 @@ class TestSiftStream(unittest.TestCase):
         self.assertEqual( last_pos , eof ) 
         
         # now append 
-        ofile = open(tempfile, "a")
+        ofile = open(TEMPFILE, "a")
         ofile.write("line 2\n")
         ofile.close()
         
@@ -271,7 +279,7 @@ class TestSiftStream(unittest.TestCase):
         new_pos = ifile.tell()
         
         self.assertNotEqual(last_pos,new_pos)
-        os.unlink(tempfile)
+        os.unlink(TEMPFILE)
         
 
 if __name__ == "__main__":

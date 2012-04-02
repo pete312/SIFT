@@ -59,13 +59,9 @@ class FileStream(SiftStream):
         self._tell = 0
         self._tail = 0
     
-    def open(self, file):
-        print "open file", file
-        if self.resource == None:
-            self.resource = open(file, "r")
-            assert(self.resource != None)
-            
-            
+    def open(self, file, mode="r"):
+        self.resource = open(file, mode)
+              
     def close(self):
         if self.resource != None:
             self.resource.close()
@@ -85,8 +81,9 @@ class FileStream(SiftStream):
                 self._tail = self._tell
         return self._safe
     
-    def write(self):
-        pass
+    def write(self, data):
+        if self.resource != None:
+            return self.resource.write(data)
         
     def at_end(self):
         
