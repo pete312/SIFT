@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 import unittest
 import sys
+import os
 from os.path import dirname, normpath, join, abspath
 
-basedir = dirname(abspath(sys.argv[0]))
-libpath = normpath(join(basedir, "../lib"))
-binpath = normpath(join(basedir, "../bin"))
-sys.path.append(libpath)
-sys.path.append(binpath)
+BASEDIR = dirname(abspath(sys.argv[0]))
+LIBPATH = normpath(join(BASEDIR, "../lib"))
+BINPATH = normpath(join(BASEDIR, "../bin"))
+sys.path.append(LIBPATH)
+sys.path.append(BINPATH)
 
 import siftstream
 import siftproperty
@@ -89,7 +90,8 @@ class MyMockDatabaseStream(siftstream.SiftStream):
         statement = self.prepare( self.get_sql + str( self.sequence_id ) )
         self.execute(statement)
         self.seek(0,2)
-
+        
+        self._at_end = True
         return self.data
            
     def write(self, data):
@@ -112,6 +114,7 @@ class MyMockDatabaseStream(siftstream.SiftStream):
             raise Exception("malformed statement")
         self.data = self.results
         self.sequence_id = 1
+        self._at_end = False
         return self.data
             
     def seek(self, position, whence=0):
@@ -131,6 +134,10 @@ class MyMockDatabaseStream(siftstream.SiftStream):
         
     def tell(self):
         return self.sequence_id
+        
+    @property
+    def at_end(self):
+        return self._at_end
         
 
 
@@ -182,11 +189,89 @@ class TestSiftStream(unittest.TestCase):
             
         test_obj.close()
         
-       
+    def test3_test_sift_filestream(self):
+        """test provided File stream """
+        tempfile = normpath (join(BASEDIR, "file_stream.txt"))
+        
+        
+    
+    
     def test3_append_to_resource_after_read_hits_the_bottom(self):
         '''need to test that the stream can detect when data is added to the stream'''
-        self.assertTrue(False) # TODO write this test
+        tempfile = normpath (join(BASEDIR, "append_test.txt"))
+        ofile = open(tempfile, "w")
+        ofile.write("line 1\n")        
+        ofile.write("line 2\n")
+        ofile.close()
         
+        reader =  siftstream.FileStream()
+        reader.open(tempfile)
+        
+        self.assertEqual(0, reader.tell())
+        
+        self.assertEqual(reader.read(), "line 1\n")
+        self.assertEqual(7, reader.tell()) # platform specific
+        self.assertFalse(reader.at_end())
+        
+        self.assertEqual(reader.read(), "line 2\n")
+        self.assertEqual(14, reader.tell()) # platform specific
+        self.assertTrue(reader.at_end())
+        
+        ofile = open(tempfile, "a")
+        ofile.write("line 3\n")
+        ofile.close()
+        
+        self.assertEqual(reader.read(2), "li")
+        self.assertFalse(reader.at_end())
+        
+        self.assertEqual(reader.read(), "ne 3\n")
+        self.assertTrue(reader.at_end())
+        
+        self.assertEqual(reader.read(), "")
+        self.assertTrue(reader.at_end())
+        
+        ofile = open(tempfile, "a")
+        ofile.write("line 4\n")
+        ofile.close()
+        
+        self.assertFalse(reader.at_end())
+        self.assertEqual(reader.read(), "line 4\n")
+        self.assertTrue(reader.at_end())
+        
+        self.assertEqual(reader.read(), "")
+        self.assertTrue(reader.at_end())
+        
+        os.unlink(tempfile)
+        
+        
+    def test_tailing_works_on_platform(self):
+        '''test tailing a file just in case it does not work the same on all platforms''' 
+        tempfile = normpath (join(BASEDIR, "append_test.txt"))
+        ofile = open(tempfile, "w")
+        ofile.write("line 1\n")
+        ofile.close()
+        
+        ifile = open(tempfile, "r")
+        buf = ifile.read()
+
+        self.assertEqual(buf, "line 1\n")
+        last_pos = ifile.tell()
+        
+        ifile.seek(0,2) # move to end 
+        eof = ifile.tell()
+        
+        self.assertEqual( last_pos , eof ) 
+        
+        # now append 
+        ofile = open(tempfile, "a")
+        ofile.write("line 2\n")
+        ofile.close()
+        
+        ifile.seek(0,2)
+        new_pos = ifile.tell()
+        
+        self.assertNotEqual(last_pos,new_pos)
+        os.unlink(tempfile)
         
 
 if __name__ == "__main__":

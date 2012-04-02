@@ -23,6 +23,7 @@ class CachingStream(siftstream.SiftStream,siftdata.SiftData):
         self._cache = collections.deque()
         self.resource = None
         self._is_open = False
+        self._at_end = False
      
     def get_cache(self):
         return self._cache
@@ -64,6 +65,7 @@ class CachingStream(siftstream.SiftStream,siftdata.SiftData):
         
     def readlines(self):
         assert(self.is_open)
+        self._at_end = True
         return self.resource.readlines()
         
     def read(self, size=-1):
@@ -73,6 +75,10 @@ class CachingStream(siftstream.SiftStream,siftdata.SiftData):
     def write(self, buffer):
         assert(self.is_open)
         self.resource.write(buffer)
+    
+    @property
+    def at_end(self):
+        return self._at_end
         
 
 class TestEngine(siftengine.SiftEngine, siftstate.SiftState):

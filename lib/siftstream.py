@@ -13,7 +13,12 @@ class SiftStream( object ):
 
     @staticmethod
     def version():
-        return siftproperty.version()    
+        return siftproperty.version()   
+
+    @abc.abstractproperty
+    def at_end(self):
+        """implement this property to return true if there is no more data in stream"""
+        pass
         
     @abc.abstractmethod
     def open(self, resource ):
@@ -44,3 +49,67 @@ class SiftStream( object ):
     def tell(self):
         """implement tell"""
         pass    
+        
+        
+class FileStream(SiftStream): 
+    def __init__(self):
+        self.resource = None
+        self._at_end = False
+        self._unread = False
+        self._tell = 0
+        self._tail = 0
+    
+    def open(self, file):
+        print "open file", file
+        if self.resource == None:
+            self.resource = open(file, "r")
+            assert(self.resource != None)
+            
+            
+    def close(self):
+        if self.resource != None:
+            self.resource.close()
+                
+    def read(self, size=None):
+        
+        if self._unread:
+            self._unread = False
+            return self._safe
+        else:
+            if size:
+                self._safe = self.resource.read(size)
+            else:
+                self._safe = self.resource.readline()
+            self._tell = self.tell()
+            if self._safe == "":
+                self._tail = self._tell
+        return self._safe
+    
+    def write(self):
+        pass
+        
+    def at_end(self):
+        
+        self._tell = self.tell()  # make sure we have currnet pos
+        self.seek(0,2)
+        self._tail = self.tell()
+        self.seek(self._tell, 0)
+        
+        if self._tail == self._tell:
+            return True
+        else:    
+            return False
+            
+        
+    def unread(self):
+        self._unread = True
+        
+    def seek(self,pos,wence):
+        self.resource.seek(pos, wence)
+        
+    def tell(self):
+        return self.resource.tell()
+        
+        
+# TODO: provide SocketStream
+

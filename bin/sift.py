@@ -13,6 +13,7 @@ def options(argv):
     return runoptions 
 
 def init():
+    # work out the paths and add them to the python path
     global LIBPATH 
     global PACKAGEPATH
     global BINPATH
@@ -28,8 +29,7 @@ def main():
 
     import logparser
     import null
-    import logstream
-    
+    import siftstream
     
     
     targetfile = normpath(join(PACKAGEPATH, 'test/samplelog1.txt'))
@@ -54,7 +54,7 @@ def main():
     print 
     
     # setup the stream which points to a text file in the test path
-    stream = logstream.LogStream()
+    stream = siftstream.FileStream()
     stream.open(targetfile)
     
     # make the collection of engines. 
