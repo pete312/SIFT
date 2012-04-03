@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# this is a lib for sift.py. look at sift.py for usage of this lib.
+
 import siftengine
 
 
