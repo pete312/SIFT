@@ -64,7 +64,7 @@ def main():
     engines.append(null)
     
     # a simple while have data parse it with each engine. How simple is that!
-    while not stream.at_end:
+    while not stream.at_end():
         for e in engines:
             e.parse(stream)
             #e.debug()

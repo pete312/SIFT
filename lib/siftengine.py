@@ -67,7 +67,7 @@ class SiftEngine(object):
         
     def parse(self,stream):
             
-        while (not stream.at_end) and (not self._matched):
+        while (not stream.at_end()) and (not self._matched):
             line = stream.read()
             pattern = self._compiled[self._found].match(line)
             if pattern:
