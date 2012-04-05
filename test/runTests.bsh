@@ -2,7 +2,7 @@
 
 PYTHON=python
 
-TESTBASE=$(dirname $0)
+TESTBASE=$(dirname $0) 
 
 cd $TESTBASE
 
