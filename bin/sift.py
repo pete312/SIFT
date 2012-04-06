@@ -27,8 +27,7 @@ def init():
 
 def main():
 
-    import logparser
-    import null
+    import liblogparser
     import siftstream
     
     
@@ -41,10 +40,10 @@ def main():
         sys.exit(2)
         
     # this is a garbage collector and might rename it to be called that.
-    null = null.Null()
+    null = siftstream.Null()
     
     # create the custom log parser object
-    log = logparser.LOGTest()
+    log = liblogparser.LOGTest()
     log.prepare()
     
     # display what this engine will be looking for in the stream.
