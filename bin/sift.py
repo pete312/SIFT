@@ -62,6 +62,7 @@ def main():
     engines.append(log)
     engines.append(null)
     
+    
     # a simple while have data parse it with each engine. How simple is that!
     while not stream.at_end():
         for e in engines:
@@ -70,6 +71,7 @@ def main():
     
     
 
+    print " the engine has a state of", log.get_state()
 
 
 if __name__ == "__main__":

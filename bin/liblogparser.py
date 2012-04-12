@@ -3,16 +3,26 @@
 # this is a lib for sift.py. look at sift.py for usage of this lib.
 
 import siftengine
+import siftstate
 
 
-class LOGTest(siftengine.SiftEngine):
+class LOGTest(siftengine.SiftEngine, siftstate.SiftState):
     def __init__(self):
         siftengine.SiftEngine.__init__(self)
+        siftstate.SiftState.__init__(self)
         self.leader = '\.\.(\d+)\: '
         self._found = None
         self._group = []
         self._total_match_count = 0
         
+        #setup state machine
+        self.init_states(['red', 'yellow' , 'green']) 
+        print self.get_state()
+
+    def on_change(self):
+        '''Define what to do when state changes.'''
+        print "state change from", self.last_state(), "to" , self.get_state()
+                
     @property
     def total_match_count(self):
         return self._total_match_count
@@ -35,12 +45,23 @@ class LOGTest(siftengine.SiftEngine):
             print "line", line, " data  ..", group
             line += 1
         self._total_match_count += 1
+        self.set_state(2)
         self.reset()
         
     def on_triggered(self,pattern):
         '''this callback is triggered every time a line is found that is a submatch for the engine'''
         print "triggered a sub match for" , self.__class__, self._found, "of" , len(self._compiled)
         self._group.append(pattern.groups())
+        
+        #change state if message contains fatal
+        start_of_fatal_string = pattern.groups()[-1].find('fatal')
+        start_of_not_fatal_string = pattern.groups()[-1].find('not fatal')
+        if (start_of_fatal_string > 0 
+            and start_of_not_fatal_string == 0):
+            print "found fatal"
+        else:
+            self.set_state(1)
+            
         
         
     def prepare(self):
@@ -67,4 +88,4 @@ class LOGTest(siftengine.SiftEngine):
                 
             
     
-    
+  

@@ -112,11 +112,9 @@ class TestEngine(siftengine.SiftEngine, siftstate.SiftState):
     def on_triggered(self):
         return True
     
-    def on_leave(self):
+    def on_change(self):
         pass
-        
-    def on_enter(self):
-        pass
+
          
      
 class TestSiftEngine(unittest.TestCase):

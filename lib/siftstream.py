@@ -97,7 +97,6 @@ class FileStream(SiftStream):
         else:    
             return False
             
-        
     def unread(self):
         self._unread = True
         

@@ -86,10 +86,6 @@ class SiftEngine(object):
     def get_segment(self, line_number=None):
         """return the line """
         return self._expressions
-    
-    def get_state(self):
-        #TODO define in siftstate
-        pass
         
     def debug(self):
         print self.__class__

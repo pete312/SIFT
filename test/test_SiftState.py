@@ -13,11 +13,8 @@ import siftproperty
 
 class MyStateMachine(siftstate.SiftState):
     
-    def on_enter(self):
-        return "enter"
-        
-    def on_leave(self):
-        return "leave"
+    def on_change(self):
+        return "change"
 
      
 class TestSiftState(unittest.TestCase):
@@ -36,7 +33,7 @@ class TestSiftState(unittest.TestCase):
         my_states = [1,2,3,4]
         self.sift_state.init_states(my_states)
         
-        self.assertEqual(my_states[0], self.sift_state.get_state() )
+        self.assertEqual(my_states[0], self.sift_state.get_state())
         
     def test2_unregistered_operations(self):
         """Assert raise exception when state is not ready"""
@@ -49,9 +46,11 @@ class TestSiftState(unittest.TestCase):
         test_obj = self.sift_state
         test_obj.init_states(self.alert_states)
         self.assertEqual(self.alert_states[0] , test_obj.get_state() )
+        self.assertEqual(self.alert_states[0] , test_obj.last_state() )
         
         test_obj.set_state(2)
         self.assertEqual(self.alert_states[2], test_obj.get_state())
+        self.assertEqual(self.alert_states[0] , test_obj.last_state() )
         
     def test4_state_change_up(self):
         """State change from green to amber to red"""
@@ -59,8 +58,10 @@ class TestSiftState(unittest.TestCase):
         test_obj.init_states(self.traffic_states)
         self.assertEqual(self.traffic_states[0] , test_obj.get_state() )
         self.assertEqual(self.traffic_states[1] , test_obj.next_state() ) 
+        self.assertEqual(self.traffic_states[0] , test_obj.last_state() ) 
         self.assertEqual(self.traffic_states[1] , test_obj.get_state() )
         self.assertEqual(self.traffic_states[2] , test_obj.next_state() ) 
+        self.assertEqual(self.traffic_states[1] , test_obj.last_state() ) 
         self.assertEqual(self.traffic_states[2] , test_obj.get_state() ) 
         
 
@@ -71,12 +72,16 @@ class TestSiftState(unittest.TestCase):
         test_obj = self.sift_state
         test_obj.init_states(self.alert_states)
         
+        self.assertEqual(my_states[0] , test_obj.get_state() )
         test_obj.set_state(2)
+        self.assertEqual(my_states[0] , test_obj.last_state() )
         self.assertEqual(my_states[2] , test_obj.get_state() )
         self.assertEqual(my_states[1] , test_obj.prev_state() ) 
+        self.assertEqual(my_states[2] , test_obj.last_state() )
         self.assertEqual(my_states[1] , test_obj.get_state() )
         self.assertEqual(my_states[0] , test_obj.prev_state() ) 
         self.assertEqual(my_states[0] , test_obj.get_state() )
+        self.assertEqual(my_states[1] , test_obj.last_state() )
         
 
         
@@ -102,14 +107,9 @@ class TestSiftState(unittest.TestCase):
         test_obj.roll_at_bottom_state(True)
         self.assertEqual(test_states[2], test_obj.prev_state())
         
+        self.assertRaises( IndexError, test_obj.set_state, 8)
         
-    @classmethod
-    def state_up_callback():
-        pass
-        
-    @classmethod
-    def state_dn_callback():
-        pass
     
 if __name__ == "__main__":
 	unittest.main()
+    
