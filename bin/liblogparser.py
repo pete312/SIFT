@@ -45,6 +45,8 @@ class LOGTest(siftengine.SiftEngine, siftstate.SiftState):
             print "line", line, " data  ..", group
             line += 1
         self._total_match_count += 1
+        
+        # so now what state should this engine be in. Lets say its red
         self.set_state(2)
         self.reset()
         
@@ -53,12 +55,17 @@ class LOGTest(siftengine.SiftEngine, siftstate.SiftState):
         print "triggered a sub match for" , self.__class__, self._found, "of" , len(self._compiled)
         self._group.append(pattern.groups())
         
+        if self.get_state() == "red":
+            # already fatal
+            return
+        
         #change state if message contains fatal
         start_of_fatal_string = pattern.groups()[-1].find('fatal')
         start_of_not_fatal_string = pattern.groups()[-1].find('not fatal')
         if (start_of_fatal_string > 0 
             and start_of_not_fatal_string == 0):
             print "found fatal"
+            self.set_state(2)
         else:
             self.set_state(1)
             
@@ -77,6 +84,9 @@ class LOGTest(siftengine.SiftEngine, siftstate.SiftState):
     def reset(self):
         '''This is reset for the engine. If not called the parser will never try to rematch anything'''
         self._found = 0
+        self._matched = False
+        
+        # In the reset we can decide to reset the state to undefined
     
                 
     def debug(self):

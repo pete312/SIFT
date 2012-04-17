@@ -61,7 +61,7 @@ class SiftEngine(object):
             print "\tregex sequecne # :" , len(self._expressions) 
             print "\tregex string : |" + regex + "|"
             print
-            raise
+            raise e
         self._compiled.append(obj)
         return obj
         
@@ -90,4 +90,18 @@ class SiftEngine(object):
     def debug(self):
         print self.__class__
    
+   
+class Null(object):
+    def __init__(self):
+        self.trash = None
+       
+    @property
+    def name(self):
+        return self.__class__   
+    
+    def parse(self,stream):
+        self.trash = stream.read()
+        
+    def debug(self):
+        print self.__class__, "contains", self.trash
         
