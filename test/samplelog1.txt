@@ -1,3 +1,9 @@
+Simple sample.
+
+demo1 shows how to parse this file. postions 1,2,3,4, and 8 are part of a sequence 
+(perhaps a thread) that is intermixed with other messages. demo1 shows how to 
+construct the parsing tool with sift to inspect this log.  
+
 ..1: Message sequence started initialization. one 
 ..2: Message sequence two is good.
 ..3: Message sequence three is not fatal but not great.

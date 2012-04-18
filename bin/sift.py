@@ -27,12 +27,14 @@ def init():
 
 
 def demo1():
+    """
+# This is a simple demo of how SIFT can be used to manage parsing of a dummy log. 
+# The messages in test/samplelog1.txt have initialization information 
+    """
     import liblogparser
     import siftstream
     import siftengine
     
-    
-        
     targetfile = normpath(join(PACKAGEPATH, 'test/samplelog1.txt'))
     #targetfile = join(basepath, 'test/samplelog1.txt')
     print targetfile
@@ -74,13 +76,25 @@ def demo1():
     print " the engine has a state of", log.get_state()
     print "\n... End of DEMO 1 ...\n\n"
 
+    
+
 def demo2():
+    """
+# This example is a progression of demo1. This demonstrates how 3 parsers can 
+# interact. Thread 1 and 2 represent 2 initialization threads. In this case both 
+# have to be Ready for the worker to have properly processed its data represented by 
+# number strings. This shows how to quickly make this complex task manageable using
+# SIFT. The messages found in samplelog2_bad_case_for_some.txt will have a number 
+# items which have not processed correctly because an init thread is not ready. SIFT's 
+# task is to determine which.
+    """
     import libmultiparser
     import siftstream
     import siftengine
+    from libmultiparser import T1_THREAD, T2_THREAD
     
     
-    targetfile = normpath(join(PACKAGEPATH, 'test/samplelog2_bad_case_for_some.txt'))
+    targetfile = normpath(join(PACKAGEPATH, 'test/sift_to_the_rescue.txt'))
     #targetfile = join(basepath, 'test/samplelog1.txt')
     print targetfile
     
@@ -98,15 +112,14 @@ def demo2():
     worker_thread = libmultiparser.WorkerPattern()
     worker_thread.prepare()
 
-    
     # The next 2 parsers are looking for 2 thread messages sequences and 
     # can initalize independantly. They both share the same codebase. all that is
     # different is the pattern that they are using to match the messages.
     # Also the worker thread is passed so that its state can be controlled.
-    prime_thread = libmultiparser.ThreadInitSequence(thread=1, worker=worker_thread)
+    prime_thread = libmultiparser.ThreadInitSequence(thread=T1_THREAD, worker=worker_thread)
     prime_thread.prepare()
     
-    aux_thread = libmultiparser.ThreadInitSequence(thread=2, worker=worker_thread)
+    aux_thread = libmultiparser.ThreadInitSequence(thread=T2_THREAD, worker=worker_thread)
     aux_thread.prepare()
     
     # setup the stream which points to a text file in the test path
@@ -118,32 +131,47 @@ def demo2():
     engines = []
     engines.append(prime_thread)
     engines.append(aux_thread)
-    engines.append(worker_thread)
+    engines.append(worker_thread) 
     engines.append(null)
     
-    
+
     # a simple while have data parse it with each engine. How simple is that!
     while not stream.at_end():
         for e in engines:
             e.parse(stream)
             #e.debug()
+            
 
+    print "\n Parsing Results :"
     for engine in engines:
-        print "---", engine.name
+        # print all engine states except the null one
         if type(engine) != siftengine.Null:
-        
+            print "---", engine.name
             print " engine %s has a state of %s" % ( engine.name , engine.get_state() )
             
+    # print the summery of the worker thread 
+    
+    if worker_thread.has_error:
+        print "\n\tThe service has errors and the following items need to be rerun"
+        for item in worker_thread.get_items_in_error():
+            print "\t", item
+            
+    print "\n\tThe service properly completed these items"
+    for item in worker_thread.get_completed_items():
+        print "\t" , item
+            
     print "\n... End of DEMO 2 ...\n\n"
+
     
 def main():
-
-
+    
     print ".... DEMO 1 .... \n Use of rather simple parse defined in liblogparser.py\n"
+    print demo1.__doc__
     raw_input("Press key to start demo 1 ")
     demo1()
     
-    print ".... DEMO 2 shows how to create a more complex parser defined in libmultiparse.py"
+    print ".... DEMO 2 shows how to create a more complex parser defined in libmultiparser.py"
+    print demo2.__doc__
     raw_input("Press key to start demo 2 ")
     demo2()
     

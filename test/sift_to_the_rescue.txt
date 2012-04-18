@@ -1,0 +1,44 @@
+Sift to the rescue
+
+This mock log is a contrived situation but demonstrates the ability of sift to 
+aid production problems.
+
+This mock log simulates a 3 thread service. thread 1 and 2 initialize the service 
+and the worker thread processes the data when thread 1 and 2 are ready.
+However the service has a bug and is low on the priority to fix because it dosnt 
+happen often. The bug is the worker thread only checks thread 2 for success. 
+If thread one fails it continues to process data and the data will be incorrect. 
+The service will need to be rerun with only the data that failed. Thread 1 has 
+failed at log position 5 but since the worker only checks thread 2, it starts 
+processing at log position 9.
+
+Thread 1 finally completes init at pos 19 which means only 5 of the data points 
+(pos 20 though 24) loaded. Also "five" was loaded 2 times at 18 and 24. So data 
+point 24 is suspect and has also to be run from scratch. demo2 shows how Sift 
+can isolate the worker log lines from the other threads and help report the 
+problem or be programmed to rerun the service with the items that failed.
+
+..1: thread 1 sequence started initialization. one 
+..2: thread 1 sequence two is good.
+..3: thread 1 sequence three is getting there.
+..4: thread 2 initialization start. 
+..5: thread 1 sequence four has failed. Recovery started.
+..6: thread 2 aquiring socket connection 123.456.789.111.
+..7: thread 2 init complete.
+..8: thread 1 sequence started initialization. 
+..9: worker thread one
+..10: worker thread two
+..11: worker thread three
+..12: worker thread four
+..13: worker thread eighteen
+..14: thread 1 sequence two is good.
+..15: thread 1 sequence three is good.
+..16: thread 1 sequence four is good.
+..17: worker thread eight
+..18: worker thread five
+..19: thread 1 sequence initialization five complete
+..20: worker thread nine
+..21: worker thread seven
+..22: worker thread eleven
+..23: worker thread twelve
+..24: worker thread five
