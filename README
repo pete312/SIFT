@@ -1,5 +1,7 @@
-SIFT is an open source file and log parser. This is the 1st file of the 
-project hosted on GitHub.
+SIFT is an open source block parser. It's useful in probing a stream for 
+sequences or blocks of data in order to automate, monitor or report status
+based on content. It is possible to create complex interdependant block parsers.
+A demo is in the bin directory called sift.py
 
 It's design is intended to be used by support personel who are fimilar 
 with the basics of python programming, but simple enough that a new parser 
