@@ -71,7 +71,7 @@ def demo1():
     while not stream.at_end():
         for e in engines:
             e.parse(stream)
-            #e.debug()
+            
 
     print " the engine has a state of", log.get_state()
     print "\n... End of DEMO 1 ...\n\n"
@@ -94,7 +94,7 @@ def demo2():
     from libmultiparser import T1_THREAD, T2_THREAD
     
     
-    targetfile = normpath(join(PACKAGEPATH, 'test/sift_to_the_rescue.txt'))
+    targetfile = normpath(join(PACKAGEPATH, 'test/samplelog2_bad_case_for_some.txt'))
     #targetfile = join(basepath, 'test/samplelog1.txt')
     print targetfile
     
@@ -102,52 +102,36 @@ def demo2():
         print "No input file", targetfile
         sys.exit(2)
         
-    # this is a garbage collector and might rename it to be called that.
-    null = siftengine.Null()
     
     # create the custom log parser objects for each worker pattern.
     
     # this parser is looking for worker messages in the form 
     # ..6: Autonomus message <number string>
     worker_thread = libmultiparser.WorkerPattern()
-    worker_thread.prepare()
 
     # The next 2 parsers are looking for 2 thread messages sequences and 
     # can initalize independantly. They both share the same codebase. all that is
     # different is the pattern that they are using to match the messages.
     # Also the worker thread is passed so that its state can be controlled.
-    prime_thread = libmultiparser.ThreadInitSequence(thread=T1_THREAD, worker=worker_thread)
-    prime_thread.prepare()
-    
+    prime_thread = libmultiparser.ThreadInitSequence(thread=T1_THREAD, worker=worker_thread)    
     aux_thread = libmultiparser.ThreadInitSequence(thread=T2_THREAD, worker=worker_thread)
-    aux_thread.prepare()
+
     
     # setup the stream which points to a text file in the test path
     stream = siftstream.FileStream()
     stream.open(targetfile)
     
     # make the collection of engines. 
-    # The null engine is important and should always be at the bottom to collect the garbage.
-    engines = []
-    engines.append(prime_thread)
-    engines.append(aux_thread)
-    engines.append(worker_thread) 
-    engines.append(null)
+    engine = siftengine.Collector()
+    engine.add_engine(prime_thread)
+    engine.add_engine(aux_thread)
+    engine.add_engine(worker_thread)
     
+    engine.parse(stream)
 
-    # a simple while have data parse it with each engine. How simple is that!
-    while not stream.at_end():
-        for e in engines:
-            e.parse(stream)
-            #e.debug()
-            
-
-    print "\n Parsing Results :"
-    for engine in engines:
-        # print all engine states except the null one
-        if type(engine) != siftengine.Null:
-            print "---", engine.name
-            print " engine %s has a state of %s" % ( engine.name , engine.get_state() )
+    print "\n Engine state at end of file :"
+    for engine in engine.collection:
+        print " engine %s has a state of %s" % ( engine.name , engine.get_state() )
             
     # print the summery of the worker thread 
     

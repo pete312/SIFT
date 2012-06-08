@@ -61,6 +61,7 @@ class FileStream(SiftStream):
     
     def open(self, file, mode="r"):
         self.resource = open(file, mode)
+        return self.resource
               
     def close(self):
         if self.resource != None:

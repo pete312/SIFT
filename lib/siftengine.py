@@ -1,11 +1,11 @@
-import abc
+from abc import ABCMeta, abstractmethod
 import siftproperty
 import re
 import sys
 
 class SiftEngine(object):
 
-    __metaclass__ = abc.ABCMeta
+    __metaclass__ = ABCMeta
     
     def __init__(self):
         self._expressions = []
@@ -26,20 +26,20 @@ class SiftEngine(object):
     def version():
         return siftproperty.version()
 
-    @abc.abstractmethod
+    @abstractmethod
     def prepare(self):
         pass
         
-    @abc.abstractmethod
+    @abstractmethod
     def reset(self):
         pass
         
-    @abc.abstractmethod
+    @abstractmethod
     def on_match(self):
         """Called when the segment is finished matching"""
         pass
     
-    @abc.abstractmethod
+    @abstractmethod
     def on_triggered(self):
         """Called when a regex matches"""
         pass
@@ -67,11 +67,13 @@ class SiftEngine(object):
         
     def parse(self,stream):
             
+        success = False
         while (not stream.at_end()) and (not self._matched):
             line = stream.read()
             pattern = self._compiled[self._found].match(line)
             if pattern:
                 self._found += 1
+                success = True
                 self.on_triggered(pattern)
                 
                 if self._found == len(self._compiled):
@@ -79,8 +81,10 @@ class SiftEngine(object):
                     self.on_match()
                 
             else:
-                stream.unread() # back up the pointer to pos before read()
-                return
+                stream.unread() # back up the pointer to pos before last read()
+                return success
+                
+        return success
         
     
     def get_segment(self, line_number=None):
@@ -97,11 +101,43 @@ class Null(object):
        
     @property
     def name(self):
-        return self.__class__   
+        return "Null"   
     
     def parse(self,stream):
         self.trash = stream.read()
         
     def debug(self):
         print self.__class__, "contains", self.trash
+        
+class Collector(object):
+    
+    def __init__(self):
+        self.trash = None
+        self.collection = set([])
+    
+    
+    def parse(self,stream):
+        success = 0
+        while not stream.at_end():
+            #found
+            success = 0
+            for e in self.collection:   
+                success |= e.parse(stream)
+            
+            if not success:
+                self.trash = stream.read()
+        
+    def debug(self):
+        print self.__class__, "contains", self.trash
+        
+    def new_id(self):
+        newid = (len(self.collection) * 2) or 1
+        
+        self._idcollection |= newid
+        return newid 
+    
+    def add_engine(self, engine):
+        self.collection.add(engine)
+        
+
         

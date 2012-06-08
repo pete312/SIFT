@@ -15,6 +15,7 @@ import siftdata
 import siftstream
 import collections
 import logging
+import time
 
 
 class CachingStream(siftstream.SiftStream,siftdata.SiftData):
@@ -82,9 +83,11 @@ class CachingStream(siftstream.SiftStream,siftdata.SiftData):
         
 
 class TestEngine(siftengine.SiftEngine, siftstate.SiftState):
-    def __init__(self):
+    def __init__(self, triggered_callback, match_callback):
         siftengine.SiftEngine.__init__(self)
         siftstate.SiftState.__init__(self)
+        self._triggered_callback = triggered_callback
+        self._match_callback = match_callback
     
         self._expressions = ['dummy']
         self._matched_count = 0
@@ -101,36 +104,67 @@ class TestEngine(siftengine.SiftEngine, siftstate.SiftState):
     def prepare(self):
         self.add_regex("regex one")
         self.add_regex("regex two")
-        return True
+        self.reset()
 
     def reset(self):
-        return True
+        self._found = 0
+        self._matched = False
         
     def on_match(self):
-        return True
+        self._match_callback()
         
-    def on_triggered(self):
-        return True
+    def on_triggered(self, pattern):
+        print "here"
+        self._triggered_callback(pattern)
     
     def on_change(self):
         pass
+        
+        
+class Visitor(siftengine.SiftEngine):
+    def __init__(self, pattern ):
+        siftengine.SiftEngine.__init__(self)
+        self.visits = 0
+        
+        self.add_regex(pattern)
+        
+    def prepare(self):
+        self.reset()
+        
+    def reset(self):
+        pass
+        
+    def on_match(self):
+        pass
+        
+    def on_triggered(self):
+        pass
+        
+    
 
          
      
 class TestSiftEngine(unittest.TestCase):
     
     def setUp(self):
-        self.sift_engine = TestEngine();
+        self.sift_engine = TestEngine(self.triggered_callback, self.matched_callback);
         
         
     def tearDown(self):
     
         #cleanup any files this test produces.
         try:
+            #pass
             os.remove("local.log")
         except OSError:
             # its ok if the file is not there
             pass
+            
+    def matched_callback(self):
+        print "matched im in here"
+            
+    def triggered_callback(self, pattern):
+        print "im here", pattern.groups() 
     
     def test0_construct(self):
         self.assertTrue( self.sift_engine )
@@ -139,17 +173,10 @@ class TestSiftEngine(unittest.TestCase):
     def test1_add_expression(self):
         test_obj = self.sift_engine
         test_obj.prepare()
-        empty = TestEngine()
+        empty = TestEngine(self.triggered_callback, self.matched_callback)
         self.assertEqual(['dummy','regex one', 'regex two'], test_obj.get_segment() )
         self.assertEqual( ['dummy'], empty.get_segment() )
         
-        
-    def notest(self):
-        d = collections.deque([["one"],["two"],["three"]])
-       
-        print d[1]
-        d.append(["four"])
-        print d
         
 
     def test2_test_engine(self):
@@ -175,10 +202,61 @@ class TestSiftEngine(unittest.TestCase):
                 
         #resource.load_cache()
 
-        
         resource.close()
+        logging.shutdown()
         
         
+    def test3_test_parse_trigger_and_matched(self):
+    
+        class NewTest(TestEngine):
+            def __init__(self, trigger_callback, match_callback):
+                TestEngine.__init__(self, trigger_callback, match_callback)
+                
+            def prepare(self):
+                self.add_regex("regex one (d+)")
+                self.add_regex("regex two (d+)")
+            
+            
+                
+        test_obj = NewTest(self.triggered_callback, self.matched_callback)
+        LOG_FORMAT = '%(message)s'
+        logging.basicConfig(filename="local.log", level=logging.DEBUG, format=LOG_FORMAT)
+        logging.info("this\n")
+
+        f = open("local.log")
+        print f.readlines()
+        f.close()
+        stream = siftstream.FileStream()
+        #self.assertTrue( stream.open("local.log") )
+        self.assertTrue( os.path.exists("local.log") )
+        self.assertTrue( stream.open("./local.log")  )
+        
+        logging.info("this is the last line")
+        logging.shutdown()
+        
+    
+    # make sure each engine is visited before a line is collected as garbage.
+    def test_visitation(self):
+        c  = siftengine.Collector() 
+        c.add_engine(Visitor("one"))
+        c.add_engine(Visitor("two"))
+        
+        LOG_FORMAT = '%(message)s'
+        logging.basicConfig(filename="local.log", level=logging.DEBUG, format=LOG_FORMAT)
+        
+        logging.warn("no match for me")
+        
+        f = open("./local.log")
+        print f.readlines()
+      
+        
+        #self.assertTrue( os.path.exists("lofcal.log") )
+        stream = siftstream.FileStream()
+        self.assertTrue(  stream.open("./local.log") )
+        
+        c.parse(stream)
+        
+    
     
 if __name__ == "__main__":
 	unittest.main()

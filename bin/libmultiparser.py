@@ -6,8 +6,15 @@
 
 import siftengine
 import siftstate
+import re
 
+
+# matches "..3: "
 RX_LEADER = '\.\.(\d+)\:\s'
+STATE_RED = 0
+STATE_YELLOW = 1
+STATE_GREEN = 2
+
  
 class LogBase(siftengine.SiftEngine, siftstate.SiftState):
     def __init__(self, str_name, thread_id, worker):
@@ -23,11 +30,13 @@ class LogBase(siftengine.SiftEngine, siftstate.SiftState):
         
         #setup state machine green is matched. yellow is in progress of matching, red is not matched or error.
         self.init_states(['red', 'yellow' , 'green']) 
+        
+        self.prepare()
   
 
     def on_change(self):
         '''Define what to do when state changes.'''
-        print " %s changed state from %s to %s" % (self.name , self.last_state(),  self.get_state() )
+        print "\n %s changed state from %s to %s \n" % (self.name , self.last_state(),  self.get_state() )
                 
     @property
     def total_match_count(self):
@@ -49,45 +58,50 @@ class LogBase(siftengine.SiftEngine, siftstate.SiftState):
         '''this callback is triggered when an engine becomes fully matched'''
         print "\n ** found a match for %s **\n" % self.name
         
-        print "\tinformation gleened from %s:" % self.name
+        print "\tgroup information from %s:\n" % self.name
         line = 1
         for group in self._group:
             print "\tline", line, " data  ..", group
             line += 1
         self._total_match_count += 1
         
-        # 
-        self.set_state(2) # green
+        self.set_state(STATE_GREEN) 
         self.worker.set_state( self.id )
-        self.reset()
+        
+        # After matching I want to reset in case there is another start 
+        # at which time on_triggered will be called. 
+        self.reset() 
         
     def on_triggered(self,pattern):
         '''this callback is triggered every time a line is found that is a submatch for the engine'''
         
         if self.get_state() == 'green':
-            # If here it means that we have started to match again. The state must drop to yellow.
+            # If here it means that we have started to match again after a successful match. 
+            # The state must drop to yellow.
             self.prev_state()
             
-        print " %s triggered a sub match for %d of %d" % ( self.name, self._found, len(self._compiled) )
-        self._group.append(pattern.groups())
+        groups = pattern.groups()
         
-        if self.get_state() == "red":
-            # already fatal
-            return
+        print "seq %d %s got groups" % (self._found, self.name), groups 
         
-        #change state if message contains fatal
-        start_of_fatal_string = pattern.groups()[-1].lower.find('fatal')
-        start_of_not_fatal_string = pattern.groups()[-1].lower.find('not fatal')
-        if (start_of_fatal_string > 0 
-            and start_of_not_fatal_string == 0):
-            print "found fatal"
-            self.set_state(2)
+        fatal = False
+        if len(groups) > 1:
+            if len(re.findall('fatal|error|fail', groups[1])) > 0:
+                fatal = True
+            else:
+                self._group.append(groups)
+        
+        if fatal:
+            self.set_state(STATE_RED)
+            self.reset()
         else:
-            self.set_state(1)
+            self.set_state(STATE_YELLOW)
         
     def reset(self):
         '''This is reset for the engine. If not called the parser will never try to rematch anything'''
         self._found = 0
+        self._matched = False
+        self._group = []
     
                 
     def debug(self):
@@ -110,9 +124,12 @@ class WorkerPattern(siftengine.SiftEngine, siftstate.SiftState):
         self.reset()
         self._name = "worker parser"
         self._error_items = set([])
+        self._state_transitions = set([])
+        self._dependancy = 0
         
         self.init_states( [NOT_READY, T1_READY, T2_READY, READY] )
         
+        self.prepare()
         print " constructed worker parser"
         
     
@@ -121,7 +138,6 @@ class WorkerPattern(siftengine.SiftEngine, siftstate.SiftState):
         return self._name
     
     def reset(self):
-        self._state_transitions = set([])
         self._found = 0
         self._matched = False
     
@@ -150,19 +166,30 @@ class WorkerPattern(siftengine.SiftEngine, siftstate.SiftState):
         else:
             self._error_items.add( item )
             print "Error item \"%s\" encountered before system ready." % ( item )
+
+    
+    def dependant_met(self):
+        self._depencant_met += 1
+        
+    def new_dependant(self):
+        self._dependancy += 1
         
     
     def on_change(self):
         # this callback must reconize that transitions T1_READY and T2_READY 
         # have happened. If true the state transitions into READY
-        print " %s changed state from %s to %s" % (self.name , self.last_state(),  self.get_state() )
+        print "\n %s changed state from %s to %s\n" \
+            % (self.name , self.last_state(),  self.get_state() )
         self._state_transitions.add(self.get_state())
         
         if self.get_state() == NOT_READY:
             self._state_transitions = set([])
+        elif self.get_state() == READY:
+            print "THE WORKER HAS NOW BECOME READY"
             
-        
-        if T1_READY in self._state_transitions and T2_READY in self._state_transitions:
+        elif T1_READY in self._state_transitions \
+            and T2_READY in self._state_transitions:
+            print "BOTH INIT TREADS are READY"
             self.set_state(READY)
            
     def prepare(self):
@@ -176,7 +203,8 @@ class WorkerPattern(siftengine.SiftEngine, siftstate.SiftState):
 def ThreadInitSequence(thread, worker):
         
         if type(worker) != WorkerPattern:
-            message = "Worker not of type %s found %s instead"  % (WorkerPattern, type(worker))
+            message = "Worker not of type %s found %s instead"  \
+                % (WorkerPattern, type(worker))
             raise TypeError(message)
 
         # factory pattern to pick 
@@ -186,7 +214,8 @@ def ThreadInitSequence(thread, worker):
             return InitThreadType2(worker)
         else:
             namespace = __name__
-            err_str = "thread type not < %s.T1_THREAD | %s.T2_THREAD >" % (namespace,namespace)
+            err_str = "thread type not < %s.T1_THREAD | %s.T2_THREAD >" \
+                % (namespace,namespace)
             raise TypeError(err_str)
             
     
@@ -196,14 +225,15 @@ class InitThreadType1(LogBase):
         LogBase.__init__(self, "Thread 1 parser", T1_THREAD, worker)
        
         print " constructed %s" % self.name
-
+        
+        
             
     def prepare(self):
         '''Look for thread 1 message sequence'''
         self.add_regex( RX_LEADER + "thread 1 sequence started initialization. (.+)")
         self.add_regex( RX_LEADER + "thread 1 sequence two (.+)")
         self.add_regex( RX_LEADER + "thread 1 sequence three (.+)")
-        self.add_regex( RX_LEADER + "thread 1 sequence four (.+)")
+        self.add_regex( RX_LEADER + "thread 1 sequence four(.*)")
         self.add_regex( RX_LEADER + "thread 1 sequence initialization five (.+)")
         self.reset()
 
@@ -212,6 +242,8 @@ class InitThreadType2(LogBase):
         LogBase.__init__(self, "Thread 2 parser", T2_THREAD, worker)
         
         print " constructed %s" % self.name
+        
+        
     
     def prepare(self):
         '''Look for thread 2 message sequence'''
